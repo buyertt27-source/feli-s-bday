@@ -117,7 +117,7 @@ export default function App() {
       // Salah (a. Kayaknya 14 atau c. ohh 16!!!)
       sounds.playWrong();
       setRoastShake(true);
-      setTimeout(() => setRoastShake(false), 500);
+      setTimeout(() => setRoastShake(false), 450);
 
       const wrongRoasts = [
         "salahhh, masa umur sendiri ga tau😝😝😝",
@@ -161,12 +161,12 @@ export default function App() {
     const updated = paperChoices.filter(item => item !== choice);
     setPaperChoices(updated);
 
-    // If all are exhausted, move to give up stage!
+    // If all are exhausted, move to give up stage
     if (updated.length === 0) {
       setTimeout(() => {
         setPaperRoast(null);
         setStage('GIVE_UP_CHOICE');
-      }, 1600);
+      }, 1500);
     }
   };
 
@@ -214,70 +214,49 @@ export default function App() {
   ].includes(stage);
 
   return (
-    <div className={`min-h-screen relative flex flex-col justify-between overflow-x-hidden transition-colors duration-1000 ${
+    <div className={`min-h-screen relative flex flex-col justify-between overflow-x-hidden transition-colors duration-700 ${
       isMysteryTheme
-        ? 'bg-slate-50/95 text-slate-900'
+        ? 'bg-slate-50 text-slate-900'
         : 'bg-slate-50 text-slate-900'
     }`}>
       {/* Sound toggle button */}
       <SoundToggle />
 
       {/* Tactile Dot Grid */}
-      <div className="fixed inset-0 pointer-events-none bg-dot-grid opacity-70 z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-dot-grid opacity-60 z-0" />
 
-      {/* Organic Morphing Liquid Blobs with Shimmering Ambient Light */}
+      {/* GPU-Optimized Ambient Color Orbs (Fast, Smooth, No CPU Lag) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className={`absolute -top-24 -left-24 w-[520px] h-[520px] blur-[130px] opacity-55 animate-liquid-blob transition-colors duration-1000 ${
+        <div className={`gpu-ambient-blob absolute -top-20 -left-20 w-[420px] h-[420px] rounded-full blur-[80px] opacity-35 transition-colors duration-700 ${
           isMysteryTheme ? 'bg-purple-200' : 'bg-rose-200'
         }`} />
-        <div className={`absolute top-1/4 -right-28 w-[480px] h-[480px] blur-[130px] opacity-50 animate-liquid-blob transition-colors duration-1000 [animation-delay:-5s] ${
+        <div className={`gpu-ambient-blob absolute top-1/4 -right-20 w-[400px] h-[400px] rounded-full blur-[80px] opacity-35 transition-colors duration-700 ${
           isMysteryTheme ? 'bg-rose-200' : 'bg-amber-200'
         }`} />
-        <div className={`absolute -bottom-28 left-1/3 w-[460px] h-[460px] blur-[130px] opacity-45 animate-liquid-blob transition-colors duration-1000 [animation-delay:-10s] ${
+        <div className={`gpu-ambient-blob absolute -bottom-20 left-1/3 w-[380px] h-[380px] rounded-full blur-[80px] opacity-30 transition-colors duration-700 ${
           isMysteryTheme ? 'bg-indigo-100' : 'bg-teal-100'
         }`} />
-
-        {/* Floating Subtle Micro Bubbles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              y: ['105vh', '-10vh'],
-              x: [0, (i % 2 === 0 ? 35 : -35), 0],
-              opacity: [0, 0.45, 0],
-            }}
-            transition={{
-              duration: 18 + i * 3,
-              repeat: Infinity,
-              delay: i * 2.8,
-              ease: 'easeInOut',
-            }}
-            style={{ left: `${15 + i * 14}%` }}
-            className="absolute w-4 h-4 rounded-full bg-white/70 backdrop-blur-md border border-white shadow-sm pointer-events-none"
-          />
-        ))}
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Smooth 60fps/120fps GPU Composited Transitions */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 max-w-4xl mx-auto w-full">
         <AnimatePresence mode="wait">
 
-          {/* ----------------- STAGE 0: APOLOGY (LIQUID GLASS) ----------------- */}
+          {/* ----------------- STAGE 0: APOLOGY ----------------- */}
           {stage === 'APOLOGY' && (
             <motion.div
               key="stage-apology"
-              initial={{ opacity: 0, scale: 0.94, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(12px)', y: -18, scale: 0.96 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.96 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               className="text-center max-w-lg mx-auto py-12 px-6 sm:px-8 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
             >
-              {/* Top Specular Liquid Light Line */}
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90" />
               
               <motion.div
-                animate={{ y: [0, -8, 0], rotate: [-2, 2, -2] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
                 className="text-6xl sm:text-7xl mb-5 inline-block filter drop-shadow-md"
               >
                 😔
@@ -291,13 +270,13 @@ export default function App() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.025, y: -2 }}
+                  whileHover={{ scale: 1.025, y: -1.5 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setStage('ROULETTE')}
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-[0_12px_28px_rgba(15,23,42,0.18)] liquid-shimmer"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-[0_10px_24px_rgba(15,23,42,0.16)] liquid-shimmer"
                 >
                   <span>Buka Sekarang ({apologyCountdown}s)</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform text-amber-300" />
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-300" />
                 </motion.button>
               </div>
             </motion.div>
@@ -307,10 +286,10 @@ export default function App() {
           {stage === 'ROULETTE' && (
             <motion.div
               key="stage-roulette"
-              initial={{ opacity: 0, y: 25, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               className="w-full"
             >
               <RouletteSpinner onComplete={() => setStage('AGE_QUIZ')} />
@@ -321,49 +300,39 @@ export default function App() {
           {stage === 'AGE_QUIZ' && (
             <motion.div
               key="stage-age-quiz"
-              initial={{ opacity: 0, scale: 0.9, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 1.04, filter: 'blur(10px)' }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               className={`w-full max-w-xl mx-auto flex flex-col items-center ${
                 roastShake ? 'animate-shake' : ''
               }`}
             >
-              {/* Question Heading with Fluid Float */}
-              <motion.div
-                initial={{ y: -15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-center mb-8"
-              >
-                <motion.div
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-700 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
-                >
+              {/* Question Heading */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-700 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
                   <PartyPopper className="w-4 h-4 text-amber-500 animate-bounce" /> Pertanyaan Spesial
-                </motion.div>
+                </div>
                 <h2 className="text-3xl sm:text-5xl font-black text-slate-900 font-display leading-tight">
                   jadi berapakah umur kamu sekarangg🥳🥳?!?
                 </h2>
                 <p className="text-slate-500 text-sm mt-3 font-medium">
                   Pilih jawaban yang paling tepat sesuai tanggal 29-11-2011 tadi:
                 </p>
-              </motion.div>
+              </div>
 
               {/* Slanted Striped Liquid Glass Columns */}
               <div className="w-full flex flex-col gap-4">
                 {/* Option A (14) - Wrong */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 15, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.08, duration: 0.4 }}
                   onClick={() => handleAgeChoice('a')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-indigo-200/90 hover:border-indigo-500 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_12px_28px_rgba(99,102,241,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-indigo-200/90 hover:border-indigo-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(99,102,241,0.06)] liquid-shimmer"
                 >
-                  {/* Specular line on top of liquid card */}
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
                   
@@ -376,19 +345,19 @@ export default function App() {
                         Kayaknya 14
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-indigo-500 group-hover:translate-x-1.5 transition-transform" />
+                    <ChevronRight className="w-6 h-6 text-indigo-500 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* Option B (15) - CORRECT! */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 15, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.22, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.16, duration: 0.4 }}
                   onClick={() => handleAgeChoice('b')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-purple-200/90 hover:border-purple-500 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_12px_28px_rgba(168,85,247,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-purple-200/90 hover:border-purple-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(168,85,247,0.06)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
@@ -402,19 +371,19 @@ export default function App() {
                         mungkin 15
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-purple-500 group-hover:translate-x-1.5 transition-transform" />
+                    <ChevronRight className="w-6 h-6 text-purple-500 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* Option C (16) - Wrong */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 15, scale: 0.92 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.32, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.24, duration: 0.4 }}
                   onClick={() => handleAgeChoice('c')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-200/90 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_12px_28px_rgba(244,63,94,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-200/90 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(244,63,94,0.06)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
@@ -428,20 +397,20 @@ export default function App() {
                         ohh 16!!!
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1.5 transition-transform" />
+                    <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.button>
               </div>
 
-              {/* Red Mocking Roast: Liquid Rose Glass */}
+              {/* Red Mocking Roast: Fast GPU Fade */}
               <AnimatePresence>
                 {roastMessage && (
                   <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_15px_35px_rgba(244,63,94,0.18)] relative overflow-hidden"
+                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_12px_28px_rgba(244,63,94,0.12)] relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-stripes-red opacity-50 pointer-events-none" />
                     <div className="relative z-10 flex flex-col items-center">
@@ -463,18 +432,18 @@ export default function App() {
           {stage === 'GOKILL' && (
             <motion.div
               key="stage-gokill"
-              initial={{ scale: 0.6, opacity: 0, filter: 'blur(10px)' }}
-              animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 1.1, filter: 'blur(8px)' }}
-              transition={{ type: 'spring', damping: 18, stiffness: 240 }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               className="text-center py-10 px-6 max-w-lg mx-auto rounded-[32px] liquid-glass-elevated relative overflow-hidden"
             >
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
 
               <motion.div
-                animate={{ scale: [1, 1.12, 1], rotate: [0, 4, -4, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-block p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 shadow-lg mb-6"
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                className="inline-block p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 shadow-md mb-6"
               >
                 <Sparkles className="w-12 h-12 text-emerald-600" />
               </motion.div>
@@ -487,19 +456,13 @@ export default function App() {
                 Tepat banget! Umur kamu 15 tahun! 🎯🔥
               </p>
 
-              {/* 3 Seconds Countdown in Liquid Pill */}
+              {/* 3 Seconds Countdown */}
               <div className="mt-8 flex flex-col items-center justify-center">
                 <div className="flex items-center gap-2 px-5 py-2.5 rounded-full liquid-glass border border-white text-slate-700 text-sm font-bold shadow-sm">
                   <span>Melanjutkan dalam</span>
-                  <motion.span
-                    key={gokillCountdown}
-                    initial={{ scale: 1.4, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-7 h-7 rounded-full bg-emerald-500 text-white font-black flex items-center justify-center text-sm shadow-md"
-                  >
+                  <span className="w-7 h-7 rounded-full bg-emerald-500 text-white font-black flex items-center justify-center text-sm shadow-md">
                     {gokillCountdown}
-                  </motion.span>
+                  </span>
                   <span>detik...</span>
                 </div>
               </div>
@@ -510,22 +473,17 @@ export default function App() {
           {stage === 'OLDER_THAN_ME' && (
             <motion.div
               key="stage-older-than-me"
-              initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(8px)', y: -15 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.45 }}
               className="text-center max-w-md mx-auto py-12 px-6 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
             >
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
 
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1, rotate: [0, -3, 3, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-5xl sm:text-6xl mb-6 inline-block filter drop-shadow-md"
-              >
+              <div className="text-5xl sm:text-6xl mb-6 inline-block filter drop-shadow-md">
                 🥀🥀🥀
-              </motion.div>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-display leading-relaxed">
                 now you are older than me 🥀🥀🥀
               </h2>
@@ -535,47 +493,34 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 5: SEE BOX QUESTION (LIQUID GLASS) ----------------- */}
+          {/* ----------------- STAGE 5: SEE BOX QUESTION ----------------- */}
           {stage === 'SEE_BOX_QUESTION' && (
             <motion.div
               key="stage-see-box"
-              initial={{ opacity: 0, scale: 0.94, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               {/* Box Quest Tag */}
-              <motion.div
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass border border-purple-200 text-purple-700 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm"
-              >
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass border border-purple-200 text-purple-700 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
                 <Package className="w-4 h-4 text-purple-600" /> Misi Kotak Rahasia
-              </motion.div>
+              </div>
 
               {/* Text: i hope kamu belum buka kotak nya 🥀🥀🥀 */}
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-rose-600 text-base sm:text-lg font-bold mb-4 italic flex items-center justify-center gap-1.5"
-              >
+              <p className="text-rose-600 text-base sm:text-lg font-bold mb-4 italic flex items-center justify-center gap-1.5">
                 <span>i hope kamu belum buka kotak nya</span>
                 <span className="text-xl">🥀🥀🥀</span>
-              </motion.p>
+              </p>
 
-              {/* Main question Card: Liquid Glass Elevated */}
+              {/* Main question Card */}
               <div className="liquid-glass-elevated rounded-[32px] p-6 sm:p-8 text-center w-full mb-6 relative overflow-hidden">
                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
 
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-md"
-                >
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-md">
                   <Gift className="w-7 h-7" />
-                </motion.div>
+                </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display leading-snug">
                   apakah kamu sudah melihat kotak yang di lapisi itu?
                 </h2>
@@ -583,14 +528,14 @@ export default function App() {
                   (tebak, jangan di buka dulu!)
                 </p>
 
-                {/* Choices: a. iya, b. tidak in Liquid Glass */}
+                {/* Choices: a. iya, b. tidak */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                   {/* Option: iya */}
                   <motion.button
-                    whileHover={{ scale: 1.025, y: -2, transition: { duration: 0.2 } }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleBoxAnswer('iya')}
-                    className={`relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-emerald-300 hover:border-emerald-500 text-left font-display group cursor-pointer transition-all shadow-[0_10px_25px_rgba(16,185,129,0.1)] liquid-shimmer ${
+                    className={`relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-emerald-300 hover:border-emerald-500 text-left font-display group cursor-pointer transition-all shadow-[0_8px_20px_rgba(16,185,129,0.08)] liquid-shimmer ${
                       hasRemovedTidak ? 'sm:col-span-2' : ''
                     }`}
                   >
@@ -604,7 +549,7 @@ export default function App() {
                           iya, udah liat!
                         </span>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-emerald-600 group-hover:translate-x-1.5 transition-transform" />
+                      <ChevronRight className="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </motion.button>
 
@@ -614,11 +559,11 @@ export default function App() {
                       <motion.button
                         key="btn-tidak"
                         initial={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.82, filter: 'blur(8px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
-                        whileHover={{ scale: 1.025, y: -2, transition: { duration: 0.2 } }}
+                        exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
+                        whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleBoxAnswer('tidak')}
-                        className="relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left font-display group cursor-pointer transition-all shadow-[0_10px_25px_rgba(244,63,94,0.1)] liquid-shimmer"
+                        className="relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left font-display group cursor-pointer transition-all shadow-[0_8px_20px_rgba(244,63,94,0.08)] liquid-shimmer"
                       >
                         <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                         <div className="relative z-10 flex items-center justify-between">
@@ -630,7 +575,7 @@ export default function App() {
                               tidak
                             </span>
                           </div>
-                          <ChevronRight className="w-5 h-5 text-rose-600 group-hover:translate-x-1.5 transition-transform" />
+                          <ChevronRight className="w-5 h-5 text-rose-600 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </motion.button>
                     )}
@@ -641,10 +586,10 @@ export default function App() {
                 <AnimatePresence>
                   {boxJokeToast && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
-                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, filter: 'blur(4px)' }}
-                      transition={{ duration: 0.35 }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
                       className="mt-4 p-3.5 rounded-2xl liquid-glass border border-amber-300 text-amber-900 text-sm font-bold shadow-md"
                     >
                       {boxJokeToast}
@@ -659,10 +604,10 @@ export default function App() {
           {stage === 'OPEN_FIRST_LAYER' && (
             <motion.div
               key="stage-open-first-layer"
-              initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.96, filter: 'blur(10px)' }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-6">
@@ -689,10 +634,10 @@ export default function App() {
           {stage === 'GUESS_PAPER' && (
             <motion.div
               key="stage-guess-paper"
-              initial={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-6">
@@ -707,19 +652,19 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Liquid Glass Columns for Guess Choices */}
+              {/* Choices */}
               <div className="w-full flex flex-col gap-3.5">
                 <AnimatePresence>
                   {paperChoices.includes('sabun') && (
                     <motion.button
                       key="paper-sabun"
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.85, filter: 'blur(6px)', transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
-                      whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                      exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
+                      whileHover={{ scale: 1.018, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('sabun')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_10px_25px_rgba(0,0,0,0.05)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
                     >
                       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                       <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -742,13 +687,13 @@ export default function App() {
                   {paperChoices.includes('skincare') && (
                     <motion.button
                       key="paper-skincare"
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.85, filter: 'blur(6px)', transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
-                      whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                      exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
+                      whileHover={{ scale: 1.018, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('skincare')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_10px_25px_rgba(0,0,0,0.05)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
                     >
                       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                       <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -771,13 +716,13 @@ export default function App() {
                   {paperChoices.includes('kunci') && (
                     <motion.button
                       key="paper-kunci"
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.85, filter: 'blur(6px)', transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
-                      whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                      exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
+                      whileHover={{ scale: 1.018, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('kunci')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[inset_0_1.5px_2px_rgba(255,255,255,1),0_10px_25px_rgba(0,0,0,0.05)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
                     >
                       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                       <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -799,15 +744,15 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              {/* Red Mocking Roast banner for wrong guesses */}
+              {/* Red Mocking Roast */}
               <AnimatePresence>
                 {paperRoast && (
                   <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_15px_30px_rgba(244,63,94,0.18)] relative overflow-hidden"
+                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_12px_28px_rgba(244,63,94,0.14)] relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-stripes-red opacity-50 pointer-events-none" />
                     <div className="relative z-10">
@@ -825,10 +770,10 @@ export default function App() {
           {stage === 'GIVE_UP_CHOICE' && (
             <motion.div
               key="stage-give-up"
-              initial={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-8">
@@ -846,10 +791,10 @@ export default function App() {
               <div className="w-full flex flex-col gap-4">
                 {/* Option: Menyerah */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleGiveUpChoice('surrender')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-amber-300 hover:border-amber-500 text-left group cursor-pointer transition-all shadow-[0_10px_30px_rgba(245,158,11,0.1)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-amber-300 hover:border-amber-500 text-left group cursor-pointer transition-all shadow-[0_8px_24px_rgba(245,158,11,0.08)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -862,7 +807,7 @@ export default function App() {
                         menyerah 🏳️
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-amber-500 group-hover:translate-x-1.5 transition-transform" />
+                    <ChevronRight className="w-6 h-6 text-amber-500 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.button>
 
@@ -871,11 +816,11 @@ export default function App() {
                   {!hasRemovedTrash && (
                     <motion.button
                       key="btn-trash"
-                      exit={{ opacity: 0, scale: 0.82, filter: 'blur(8px)', transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
-                      whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                      exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
+                      whileHover={{ scale: 1.018, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleGiveUpChoice('trash')}
-                      className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[0_10px_30px_rgba(244,63,94,0.1)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[0_8px_24px_rgba(244,63,94,0.08)] liquid-shimmer"
                     >
                       <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
                       <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -888,7 +833,7 @@ export default function App() {
                             buang hadiah nya 🗑️
                           </span>
                         </div>
-                        <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1.5 transition-transform" />
+                        <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </motion.button>
                   )}
@@ -899,10 +844,10 @@ export default function App() {
               <AnimatePresence>
                 {trashRoast && (
                   <motion.div
-                    initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.35 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                     className="mt-6 w-full p-4 rounded-2xl liquid-glass border border-rose-300 text-rose-900 text-center font-semibold shadow-md"
                   >
                     {trashRoast}
@@ -912,22 +857,22 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 9: UNWRAP FINAL GIFT (LIQUID GLASS) ----------------- */}
+          {/* ----------------- STAGE 9: UNWRAP FINAL GIFT ----------------- */}
           {stage === 'UNWRAP_FINAL' && (
             <motion.div
               key="stage-unwrap-final"
-              initial={{ opacity: 0, scale: 0.88, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.45 }}
               className="text-center max-w-lg mx-auto py-10 px-6 sm:px-8 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
             >
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
 
               <motion.div
-                animate={{ scale: [1, 1.1, 1], y: [0, -6, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 to-rose-400 flex items-center justify-center text-white shadow-xl"
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 to-rose-400 flex items-center justify-center text-white shadow-lg"
               >
                 <Gift className="w-10 h-10" />
               </motion.div>
@@ -946,7 +891,7 @@ export default function App() {
                   sounds.playPoof();
                   setStage('HOW_IS_GIFT');
                 }}
-                className="w-full sm:w-auto min-w-[260px] px-8 py-4 rounded-2xl font-extrabold text-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_14px_30px_rgba(15,23,42,0.2)] cursor-pointer liquid-shimmer"
+                className="w-full sm:w-auto min-w-[260px] px-8 py-4 rounded-2xl font-extrabold text-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_12px_24px_rgba(15,23,42,0.18)] cursor-pointer liquid-shimmer"
               >
                 Sudah Aku Buka! 🎁
               </motion.button>
@@ -957,10 +902,10 @@ export default function App() {
           {stage === 'HOW_IS_GIFT' && (
             <motion.div
               key="stage-how-is-gift"
-              initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.94, filter: 'blur(10px)' }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-8">
@@ -975,14 +920,14 @@ export default function App() {
                 </p>
               </div>
 
-              {/* All 3 choices in Liquid Glass Columns */}
+              {/* All 3 choices */}
               <div className="w-full flex flex-col gap-4">
                 {/* a. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-emerald-200 hover:border-emerald-500 text-left group cursor-pointer transition-all shadow-[0_10px_25px_rgba(16,185,129,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-emerald-200 hover:border-emerald-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(16,185,129,0.06)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -995,16 +940,16 @@ export default function App() {
                         bagus 👍
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-emerald-600 group-hover:scale-125 transition-transform" />
+                    <Heart className="w-6 h-6 text-emerald-600 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* b. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-teal-200 hover:border-teal-500 text-left group cursor-pointer transition-all shadow-[0_10px_25px_rgba(20,184,166,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-teal-200 hover:border-teal-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(20,184,166,0.06)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -1017,16 +962,16 @@ export default function App() {
                         bagus banget! 😍
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-teal-600 group-hover:scale-125 transition-transform" />
+                    <Heart className="w-6 h-6 text-teal-600 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* c. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2, transition: { duration: 0.2 } }}
+                  whileHover={{ scale: 1.018, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-cyan-200 hover:border-cyan-500 text-left group cursor-pointer transition-all shadow-[0_10px_25px_rgba(6,182,212,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-cyan-200 hover:border-cyan-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(6,182,212,0.06)] liquid-shimmer"
                 >
                   <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
@@ -1039,47 +984,43 @@ export default function App() {
                         bagus parahh! 🔥
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-cyan-600 group-hover:scale-125 transition-transform" />
+                    <Heart className="w-6 h-6 text-cyan-600 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 11: GRAND FINALE (LIQUID GLASS) ----------------- */}
+          {/* ----------------- STAGE 11: GRAND FINALE ----------------- */}
           {stage === 'FINALE' && (
             <motion.div
               key="stage-finale"
-              initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              transition={{ type: 'spring', damping: 20, stiffness: 220 }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.45 }}
               className="text-center max-w-2xl mx-auto py-10 px-6 sm:px-10 rounded-[36px] liquid-glass-elevated relative overflow-hidden"
             >
               <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400" />
               
               <div className="relative z-10">
                 <motion.div
-                  animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.05, 1] }}
-                  transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut' }}
-                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 via-rose-400 to-purple-500 flex items-center justify-center text-white shadow-xl"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 via-rose-400 to-purple-500 flex items-center justify-center text-white shadow-lg"
                 >
                   <PartyPopper className="w-10 h-10 text-white" />
                 </motion.div>
 
-                {/* Special 15th Birthday Badge in Liquid Pill */}
-                <motion.span
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-800 border border-amber-200 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
-                >
+                {/* Special 15th Birthday Badge */}
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-800 border border-amber-200 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
                   <Sparkles className="w-4 h-4 text-amber-500 animate-spin" /> Special 15th Birthday
-                </motion.span>
+                </span>
 
                 <h1 className="text-3xl sm:text-5xl font-black text-slate-900 font-display leading-tight mb-4">
                   HAPPY BIRTHDAY! 🎉🎂
                 </h1>
 
-                {/* Requested closing text in Liquid Glass Subpanel */}
+                {/* Closing text */}
                 <div className="my-6 p-6 rounded-2xl liquid-glass border border-white text-slate-700 text-base sm:text-lg leading-relaxed shadow-sm">
                   <p className="font-extrabold text-slate-900 text-lg sm:text-xl font-display mb-2">
                     "itu saja pertunjukan dari webside ini, maaf merepotkan"
@@ -1089,7 +1030,7 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Celebration Action Buttons */}
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                   <motion.button
                     whileHover={{ scale: 1.025, y: -2 }}
@@ -1098,7 +1039,7 @@ export default function App() {
                       launchGrandCelebration();
                       sounds.playCelebration();
                     }}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_12px_28px_rgba(15,23,42,0.18)] flex items-center justify-center gap-2 cursor-pointer liquid-shimmer"
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_10px_24px_rgba(15,23,42,0.16)] flex items-center justify-center gap-2 cursor-pointer liquid-shimmer"
                   >
                     <Sparkles className="w-5 h-5 text-amber-300" />
                     <span>Lagi Confetti! 🎊</span>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useAnimation } from 'motion/react';
-import { Sparkles, Dices, Flame } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { sounds } from '../utils/sound';
 
 interface RouletteSpinnerProps {
@@ -24,7 +24,6 @@ const YEAR_ITEMS = [
   '2006', '2013', '2010', '2012', '2011'
 ];
 
-// Exact item height in pixels across ALL screen sizes for 100% perfect centering
 const REEL_ITEM_HEIGHT = 104;
 
 interface ReelProps {
@@ -51,34 +50,32 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
     let isMounted = true;
     let tickTimeout: ReturnType<typeof setTimeout>;
 
-    // Start with delay
     const startTimeout = setTimeout(() => {
       if (!isMounted) return;
 
-      // Realistic decelerating audio ticks
-      let currentInterval = 75; // starts fast
       const startTime = Date.now();
+      const totalMs = duration * 1000;
 
+      // Smooth non-blocking decelerating audio ticks
       const scheduleTick = () => {
         if (!isMounted) return;
         const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / (duration * 1000), 1);
+        const progress = Math.min(elapsed / totalMs, 1);
 
         if (progress < 0.96) {
           sounds.playTick();
-          // Decelerate interval smoothly as reel slows down
-          currentInterval = 75 + Math.pow(progress, 2.5) * 320;
-          tickTimeout = setTimeout(scheduleTick, currentInterval);
+          const nextInterval = 75 + Math.pow(progress, 2.2) * 300;
+          tickTimeout = setTimeout(scheduleTick, nextInterval);
         }
       };
       scheduleTick();
 
-      // Buttery smooth deceleration using custom cubic-bezier (exact ease-out expo curve)
+      // GPU Hardware-Accelerated transform with native spring/cubic-bezier
       controls.start({
         y: -(finalIndex * REEL_ITEM_HEIGHT),
         transition: {
           duration: duration,
-          ease: [0.12, 0.88, 0.28, 1], // Smooth physical brake curve
+          ease: [0.16, 0.9, 0.28, 1], // Butter-smooth physical deceleration
         },
       }).then(() => {
         if (!isMounted) return;
@@ -102,32 +99,27 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
         {label}
       </span>
 
-      {/* Liquid Glass Cylindrical Column */}
+      {/* GPU-Accelerated Liquid Glass Column */}
       <div
         style={{ height: `${REEL_ITEM_HEIGHT}px` }}
-        className={`relative w-full rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-700 ${
+        className={`relative w-full rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-500 ${
           isLocked
-            ? 'liquid-glass border-2 border-emerald-400/90 shadow-[0_0_30px_rgba(16,185,129,0.25)]'
-            : 'liquid-glass border-2 border-white/80 shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_10px_25px_-5px_rgba(0,0,0,0.06)]'
+            ? 'liquid-glass border-2 border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.22)]'
+            : 'liquid-glass border-2 border-white/90 shadow-[0_8px_20px_rgba(0,0,0,0.04)]'
         }`}
       >
-        {/* Slanted subtle pattern */}
-        <div className="absolute inset-0 bg-stripes-slanted opacity-35 pointer-events-none z-10" />
+        <div className="absolute inset-0 bg-stripes-slanted opacity-30 pointer-events-none z-10" />
 
-        {/* Liquid Surface Light Sweep Line */}
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent pointer-events-none z-20 opacity-80" />
+        {/* Top/bottom depth gradients */}
+        <div className="absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-white/90 to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white/90 to-transparent pointer-events-none z-20" />
+        <div className="absolute top-1 bottom-1 left-1.5 w-1 rounded-full bg-white/50 pointer-events-none z-20" />
 
-        {/* Cylinder Depth Vignette (Soft Liquid Curvature) */}
-        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/95 via-white/40 to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white/95 via-white/40 to-transparent pointer-events-none z-20" />
-
-        {/* Curved Glass Specular Highlight on Left */}
-        <div className="absolute top-1 bottom-1 left-1.5 w-1 rounded-full bg-white/60 blur-[0.5px] pointer-events-none z-20" />
-
-        {/* Rolling Reel Strip */}
+        {/* Rolling Reel Strip: GPU Composited with will-change */}
         <motion.div
           animate={controls}
           initial={{ y: 0 }}
+          style={{ willChange: 'transform', transform: 'translateZ(0)' }}
           className="absolute top-0 w-full flex flex-col items-center"
         >
           {items.map((val, idx) => (
@@ -137,9 +129,9 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
               className="flex items-center justify-center w-full select-none"
             >
               <span
-                className={`text-4xl sm:text-5xl font-black font-display tracking-tight transition-all duration-300 ${
+                className={`text-4xl sm:text-5xl font-black font-display tracking-tight transition-colors duration-200 ${
                   isLocked && idx === finalIndex
-                    ? 'text-emerald-600 scale-105 drop-shadow-[0_2px_8px_rgba(16,185,129,0.3)]'
+                    ? 'text-emerald-600 scale-105'
                     : 'text-slate-800'
                 }`}
               >
@@ -149,13 +141,12 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
           ))}
         </motion.div>
 
-        {/* Locked Badge */}
         {isLocked && (
           <motion.span
-            initial={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', damping: 14, stiffness: 350 }}
-            className="absolute bottom-2 text-[9px] font-extrabold text-emerald-700 uppercase tracking-widest bg-white/90 backdrop-blur-md px-2.5 py-0.5 rounded-full z-30 shadow-[0_2px_8px_rgba(16,185,129,0.2)] border border-emerald-300"
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute bottom-2 text-[9px] font-extrabold text-emerald-700 uppercase tracking-widest bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full z-30 shadow-sm border border-emerald-300"
           >
             LOCKED ✓
           </motion.span>
@@ -187,20 +178,16 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
 
   return (
     <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-      {/* Title with smooth floating badge */}
+      {/* Title */}
       <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="text-center mb-8"
       >
-        <motion.span
-          animate={{ y: [0, -3, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/80 text-amber-700 border border-amber-300/80 mb-3 shadow-[0_4px_15px_rgba(245,158,11,0.12)] backdrop-blur-xl"
-        >
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/90 text-amber-700 border border-amber-300/80 mb-3 shadow-sm">
           <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" /> Vegas Birthday Roulette
-        </motion.span>
+        </span>
         <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 font-display drop-shadow-sm">
           WHEN IS YOUR BIRTHDAY??
         </h1>
@@ -209,34 +196,29 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
         </p>
       </motion.div>
 
-      {/* Casino Slot Frame: Ultra Liquid Glass Console */}
+      {/* Casino Slot Frame */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative p-2 rounded-[28px] bg-gradient-to-b from-white via-slate-100/60 to-white/90 shadow-[0_30px_70px_-15px_rgba(71,85,105,0.18)] w-full border border-white"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative p-2 rounded-[28px] bg-gradient-to-b from-white via-slate-100/60 to-white/90 shadow-[0_20px_50px_-10px_rgba(71,85,105,0.12)] w-full border border-white"
       >
         {/* Decorative Glowing Beads */}
         <div className="absolute -top-3 left-8 right-8 flex justify-between pointer-events-none z-30">
           {[...Array(9)].map((_, i) => (
-            <motion.div
+            <div
               key={i}
-              animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
-              transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.14 }}
               className={`w-3.5 h-3.5 rounded-full border border-white ${
                 i % 2 === 0
-                  ? 'bg-amber-400 shadow-[0_0_12px_#f59e0b]'
-                  : 'bg-rose-400 shadow-[0_0_12px_#fb7185]'
+                  ? 'bg-amber-400 shadow-[0_0_10px_#f59e0b]'
+                  : 'bg-rose-400 shadow-[0_0_10px_#fb7185]'
               }`}
             />
           ))}
         </div>
 
         <div className="relative liquid-glass-elevated rounded-[22px] p-6 sm:p-8 overflow-hidden">
-          {/* Liquid Shimmer Highlight running across top */}
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
-
-          {/* Subtle Center Payline Guide across reels */}
           <div className="absolute left-4 right-4 top-[56%] -translate-y-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent pointer-events-none z-30" />
 
           {/* Liquid Glass Columns for Reels */}
@@ -245,21 +227,21 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
               label="TANGGAL"
               items={DAY_ITEMS}
               duration={2.2}
-              delay={0.3}
+              delay={0.25}
               onLocked={handleReelLocked}
             />
             <Reel
               label="BULAN"
               items={MONTH_ITEMS}
               duration={3.0}
-              delay={0.3}
+              delay={0.25}
               onLocked={handleReelLocked}
             />
             <Reel
               label="TAHUN"
               items={YEAR_ITEMS}
               duration={3.8}
-              delay={0.3}
+              delay={0.25}
               onLocked={handleReelLocked}
             />
           </div>
@@ -268,9 +250,9 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
           <div className="mt-5 pt-4 border-t border-slate-200/60 text-center">
             {isAllLocked ? (
               <motion.div
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', damping: 14, stiffness: 260 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="flex items-center justify-center gap-2 text-emerald-700 font-bold text-base sm:text-lg"
               >
                 <Sparkles className="w-5 h-5 text-amber-500 animate-spin" />
