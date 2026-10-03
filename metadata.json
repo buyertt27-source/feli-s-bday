@@ -1,0 +1,6 @@
+{
+  "name": "Birthday Mystery Box Quest",
+  "description": "Interactive birthday quest with roulette, funny age quiz, countdown mystery unboxing, and playful challenges.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
