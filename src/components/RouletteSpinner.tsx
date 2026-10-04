@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useAnimation } from 'motion/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { sounds } from '../utils/sound';
 
 interface RouletteSpinnerProps {
@@ -28,13 +28,14 @@ const REEL_ITEM_HEIGHT = 104;
 
 interface ReelProps {
   label: string;
+  subLabel: string;
   items: string[];
   duration: number;
   delay: number;
   onLocked: () => void;
 }
 
-const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) => {
+const Reel: React.FC<ReelProps> = ({ label, subLabel, items, duration, delay, onLocked }) => {
   const [isLocked, setIsLocked] = useState(false);
   const controls = useAnimation();
   const hasStartedRef = useRef(false);
@@ -56,7 +57,6 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
       const startTime = Date.now();
       const totalMs = duration * 1000;
 
-      // Smooth non-blocking decelerating audio ticks
       const scheduleTick = () => {
         if (!isMounted) return;
         const elapsed = Date.now() - startTime;
@@ -70,12 +70,11 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
       };
       scheduleTick();
 
-      // GPU Hardware-Accelerated transform with native spring/cubic-bezier
       controls.start({
         y: -(finalIndex * REEL_ITEM_HEIGHT),
         transition: {
           duration: duration,
-          ease: [0.16, 0.9, 0.28, 1], // Butter-smooth physical deceleration
+          ease: [0.16, 0.9, 0.28, 1],
         },
       }).then(() => {
         if (!isMounted) return;
@@ -95,27 +94,42 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
 
   return (
     <div className="flex flex-col items-center w-full">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-        {label}
-      </span>
+      {/* Precision Label Header */}
+      <div className="flex items-center justify-between w-full px-1.5 mb-2">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          {label}
+        </span>
+        <span className="font-mono text-[9px] text-slate-400">
+          {subLabel}
+        </span>
+      </div>
 
-      {/* GPU-Accelerated Liquid Glass Column */}
+      {/* Crafted Precision Drum Casing */}
       <div
         style={{ height: `${REEL_ITEM_HEIGHT}px` }}
         className={`relative w-full rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-500 ${
           isLocked
-            ? 'liquid-glass border-2 border-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.22)]'
-            : 'liquid-glass border-2 border-white/90 shadow-[0_8px_20px_rgba(0,0,0,0.04)]'
+            ? 'bg-emerald-50/70 border-2 border-emerald-500 shadow-[0_4px_24px_rgba(16,185,129,0.18)]'
+            : 'bg-white border-2 border-slate-200/90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.04)]'
         }`}
       >
-        <div className="absolute inset-0 bg-stripes-slanted opacity-30 pointer-events-none z-10" />
+        {/* Subtle physical graduation marks on edges */}
+        <div className="absolute left-1.5 top-0 bottom-0 flex flex-col justify-between py-2 pointer-events-none z-20">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-1.5 h-[1px] bg-slate-300" />
+          ))}
+        </div>
+        <div className="absolute right-1.5 top-0 bottom-0 flex flex-col justify-between py-2 pointer-events-none z-20">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-1.5 h-[1px] bg-slate-300" />
+          ))}
+        </div>
 
-        {/* Top/bottom depth gradients */}
-        <div className="absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-white/90 to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-7 bg-gradient-to-t from-white/90 to-transparent pointer-events-none z-20" />
-        <div className="absolute top-1 bottom-1 left-1.5 w-1 rounded-full bg-white/50 pointer-events-none z-20" />
+        {/* Top/bottom optical depth shadows */}
+        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-20" />
 
-        {/* Rolling Reel Strip: GPU Composited with will-change */}
+        {/* Rolling Reel Numbers */}
         <motion.div
           animate={controls}
           initial={{ y: 0 }}
@@ -132,7 +146,7 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
                 className={`text-4xl sm:text-5xl font-black font-display tracking-tight transition-colors duration-200 ${
                   isLocked && idx === finalIndex
                     ? 'text-emerald-600 scale-105'
-                    : 'text-slate-800'
+                    : 'text-slate-900'
                 }`}
               >
                 {val}
@@ -141,15 +155,17 @@ const Reel: React.FC<ReelProps> = ({ label, items, duration, delay, onLocked }) 
           ))}
         </motion.div>
 
+        {/* Locked Verification Pill */}
         {isLocked && (
-          <motion.span
+          <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="absolute bottom-2 text-[9px] font-extrabold text-emerald-700 uppercase tracking-widest bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full z-30 shadow-sm border border-emerald-300"
+            className="absolute bottom-2 flex items-center gap-1 font-mono text-[9px] font-bold text-emerald-800 uppercase tracking-widest bg-emerald-100/90 backdrop-blur-sm px-2 py-0.5 rounded-full z-30 shadow-sm border border-emerald-300"
           >
-            LOCKED ✓
-          </motion.span>
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span>LOCKED</span>
+          </motion.div>
         )}
       </div>
     </div>
@@ -185,46 +201,41 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="text-center mb-8"
       >
-        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-white/90 text-amber-700 border border-amber-300/80 mb-3 shadow-sm">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" /> Vegas Birthday Roulette
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-100 text-slate-700 border border-slate-200 mb-3 shadow-xs">
+          <Sparkles className="w-3 h-3 text-amber-500" /> Dial Takdir Kelahiran
         </span>
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 font-display drop-shadow-sm">
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 font-display">
           WHEN IS YOUR BIRTHDAY??
         </h1>
         <p className="text-slate-500 text-sm mt-2 font-medium">
-          Memutar takdir tanggal kelahiran...
+          Memutar dial mekanik untuk mencocokkan tanggal lahir kamu...
         </p>
       </motion.div>
 
-      {/* Casino Slot Frame */}
+      {/* Crafted Precision Slot Frame */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative p-2 rounded-[28px] bg-gradient-to-b from-white via-slate-100/60 to-white/90 shadow-[0_20px_50px_-10px_rgba(71,85,105,0.12)] w-full border border-white"
+        className="relative p-3 rounded-[32px] bg-white border border-slate-200 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.02)] w-full"
       >
-        {/* Decorative Glowing Beads */}
-        <div className="absolute -top-3 left-8 right-8 flex justify-between pointer-events-none z-30">
-          {[...Array(9)].map((_, i) => (
-            <div
-              key={i}
-              className={`w-3.5 h-3.5 rounded-full border border-white ${
-                i % 2 === 0
-                  ? 'bg-amber-400 shadow-[0_0_10px_#f59e0b]'
-                  : 'bg-rose-400 shadow-[0_0_10px_#fb7185]'
-              }`}
-            />
-          ))}
-        </div>
+        {/* Corner Precision Screws / Rivets */}
+        <div className="absolute top-3 left-3 w-2 h-2 rounded-full border border-slate-300 bg-slate-100" />
+        <div className="absolute top-3 right-3 w-2 h-2 rounded-full border border-slate-300 bg-slate-100" />
+        <div className="absolute bottom-3 left-3 w-2 h-2 rounded-full border border-slate-300 bg-slate-100" />
+        <div className="absolute bottom-3 right-3 w-2 h-2 rounded-full border border-slate-300 bg-slate-100" />
 
-        <div className="relative liquid-glass-elevated rounded-[22px] p-6 sm:p-8 overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
-          <div className="absolute left-4 right-4 top-[56%] -translate-y-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent pointer-events-none z-30" />
+        <div className="relative rounded-[24px] p-5 sm:p-7 bg-slate-50/70 border border-slate-100">
+          {/* Authentic Center Target Payline */}
+          <div className="absolute left-3 right-3 top-[56%] -translate-y-1/2 h-[1px] bg-red-400/40 pointer-events-none z-30" />
+          <div className="absolute left-1 top-[56%] -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-red-500 pointer-events-none z-30 shadow-xs" />
+          <div className="absolute right-1 top-[56%] -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-red-500 pointer-events-none z-30 shadow-xs" />
 
-          {/* Liquid Glass Columns for Reels */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 my-2">
+          {/* 3 Reel Columns */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 my-1">
             <Reel
               label="TANGGAL"
+              subLabel="DD"
               items={DAY_ITEMS}
               duration={2.2}
               delay={0.25}
@@ -232,6 +243,7 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
             />
             <Reel
               label="BULAN"
+              subLabel="MM"
               items={MONTH_ITEMS}
               duration={3.0}
               delay={0.25}
@@ -239,6 +251,7 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
             />
             <Reel
               label="TAHUN"
+              subLabel="YYYY"
               items={YEAR_ITEMS}
               duration={3.8}
               delay={0.25}
@@ -246,23 +259,23 @@ export const RouletteSpinner: React.FC<RouletteSpinnerProps> = ({ onComplete }) 
             />
           </div>
 
-          {/* Result Banner */}
-          <div className="mt-5 pt-4 border-t border-slate-200/60 text-center">
+          {/* Result Status Footer */}
+          <div className="mt-5 pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${isAllLocked ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-amber-400 animate-pulse'}`} />
+              <span className="font-mono text-[11px] font-semibold text-slate-600">
+                {isAllLocked ? 'TARGET TERKUNCI' : `PUTARAN ${lockedCount + 1}/3...`}
+              </span>
+            </div>
+
             {isAllLocked ? (
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="flex items-center justify-center gap-2 text-emerald-700 font-bold text-base sm:text-lg"
-              >
-                <Sparkles className="w-5 h-5 text-amber-500 animate-spin" />
-                <span>JACKPOT! Tanggal ditemukan: 29-11-2011 🎯</span>
-              </motion.div>
+              <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-md">
+                29-11-2011 🎯
+              </span>
             ) : (
-              <div className="text-xs text-amber-700 font-semibold tracking-wider flex items-center justify-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                <span>ROULETTE SEDANG BERPUTAR MULUS...</span>
-              </div>
+              <span className="font-mono text-[11px] text-slate-400">
+                Menyinkronkan...
+              </span>
             )}
           </div>
         </div>

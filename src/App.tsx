@@ -20,16 +20,17 @@ import {
 } from 'lucide-react';
 import { RouletteSpinner } from './components/RouletteSpinner';
 import { CountdownTimer } from './components/CountdownTimer';
-import { SoundToggle } from './components/SoundToggle';
+import { QuestProgress } from './components/QuestProgress';
+import { Box3DViewer } from './components/Box3DViewer';
 import { sounds } from './utils/sound';
 import { launchConfetti, launchGrandCelebration } from './utils/confetti';
 
 type Stage = 
-  | 'APOLOGY' 
+  | 'WELCOME' 
   | 'ROULETTE' 
   | 'AGE_QUIZ' 
   | 'GOKILL' 
-  | 'OLDER_THAN_ME' 
+  | 'OLDER_ROAST' 
   | 'SEE_BOX_QUESTION' 
   | 'OPEN_FIRST_LAYER' 
   | 'GUESS_PAPER' 
@@ -39,11 +40,12 @@ type Stage =
   | 'FINALE';
 
 export default function App() {
-  const [stage, setStage] = useState<Stage>('APOLOGY');
-  const [apologyCountdown, setApologyCountdown] = useState(3);
+  const [stage, setStage] = useState<Stage>('WELCOME');
+  const [welcomeCountdown, setWelcomeCountdown] = useState(5); // 5 detik durasi
   
   // Age quiz state
-  const [gokillCountdown, setGokillCountdown] = useState(3);
+  const [gokillCountdown, setGokillCountdown] = useState(5); // 5 detik durasi
+  const [olderCountdown, setOlderCountdown] = useState(5); // 5 detik durasi
   const [roastMessage, setRoastMessage] = useState<string | null>(null);
   const [roastShake, setRoastShake] = useState(false);
 
@@ -59,11 +61,11 @@ export default function App() {
   const [hasRemovedTrash, setHasRemovedTrash] = useState(false);
   const [trashRoast, setTrashRoast] = useState<string | null>(null);
 
-  // Auto transition for initial apology
+  // Auto transition for Welcome (5 seconds duration)
   useEffect(() => {
-    if (stage === 'APOLOGY') {
+    if (stage === 'WELCOME') {
       const timer = setInterval(() => {
-        setApologyCountdown((prev) => {
+        setWelcomeCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
             setStage('ROULETTE');
@@ -76,17 +78,17 @@ export default function App() {
     }
   }, [stage]);
 
-  // Gokill 3 seconds countdown
+  // Gokill 5 seconds countdown
   useEffect(() => {
     if (stage === 'GOKILL') {
       launchConfetti();
       sounds.playCorrect();
-      setGokillCountdown(3);
+      setGokillCountdown(5);
       const timer = setInterval(() => {
         setGokillCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            setStage('OLDER_THAN_ME');
+            setStage('OLDER_ROAST');
             return 0;
           }
           sounds.playTick();
@@ -97,24 +99,30 @@ export default function App() {
     }
   }, [stage]);
 
-  // Older than me transition after 3.4 seconds to design shift
+  // Older roast screen: 5 seconds duration
   useEffect(() => {
-    if (stage === 'OLDER_THAN_ME') {
-      const timer = setTimeout(() => {
-        setStage('SEE_BOX_QUESTION');
-      }, 3400);
-      return () => clearTimeout(timer);
+    if (stage === 'OLDER_ROAST') {
+      setOlderCountdown(5);
+      const timer = setInterval(() => {
+        setOlderCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setStage('SEE_BOX_QUESTION');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
   }, [stage]);
 
   // Age quiz handler - JAWABAN BENAR: 15 (Option B)
   const handleAgeChoice = (choice: 'a' | 'b' | 'c') => {
     if (choice === 'b') {
-      // Benar! "mungkin 15"
       setRoastMessage(null);
       setStage('GOKILL');
     } else {
-      // Salah (a. Kayaknya 14 atau c. ohh 16!!!)
       sounds.playWrong();
       setRoastShake(true);
       setTimeout(() => setRoastShake(false), 450);
@@ -157,11 +165,9 @@ export default function App() {
     }
     setPaperRoast(roast);
 
-    // Remove the chosen option smoothly
     const updated = paperChoices.filter(item => item !== choice);
     setPaperChoices(updated);
 
-    // If all are exhausted, move to give up stage
     if (updated.length === 0) {
       setTimeout(() => {
         setPaperRoast(null);
@@ -192,8 +198,8 @@ export default function App() {
 
   // Restart function
   const handleRestart = () => {
-    setStage('APOLOGY');
-    setApologyCountdown(3);
+    setStage('WELCOME');
+    setWelcomeCountdown(5);
     setRoastMessage(null);
     setHasRemovedTidak(false);
     setPaperChoices(['sabun', 'skincare', 'kunci']);
@@ -202,93 +208,90 @@ export default function App() {
     setTrashRoast(null);
   };
 
-  const isMysteryTheme = [
-    'OLDER_THAN_ME', 
-    'SEE_BOX_QUESTION', 
-    'OPEN_FIRST_LAYER', 
-    'GUESS_PAPER', 
-    'GIVE_UP_CHOICE', 
-    'UNWRAP_FINAL', 
-    'HOW_IS_GIFT', 
-    'FINALE'
-  ].includes(stage);
+  // Determine active step index & name for the minimal top progress indicator
+  const getStepInfo = (): { step: number; name: string } => {
+    switch (stage) {
+      case 'WELCOME':
+        return { step: 0, name: 'Selamat Datang' };
+      case 'ROULETTE':
+        return { step: 1, name: 'Tanggal Lahir' };
+      case 'AGE_QUIZ':
+      case 'GOKILL':
+      case 'OLDER_ROAST':
+        return { step: 2, name: 'Tebak Umur' };
+      case 'SEE_BOX_QUESTION':
+        return { step: 3, name: 'Cek Kotak' };
+      case 'OPEN_FIRST_LAYER':
+        return { step: 4, name: 'Buka Lapisan 1' };
+      case 'GUESS_PAPER':
+      case 'GIVE_UP_CHOICE':
+        return { step: 5, name: 'Tebak Rahasia' };
+      case 'UNWRAP_FINAL':
+      case 'HOW_IS_GIFT':
+        return { step: 6, name: 'Buka Kado' };
+      case 'FINALE':
+        return { step: 7, name: 'Selesai' };
+      default:
+        return { step: 0, name: 'Petualangan' };
+    }
+  };
+
+  const { step: currentStepIndex, name: currentStepName } = getStepInfo();
 
   return (
-    <div className={`min-h-screen relative flex flex-col justify-between overflow-x-hidden transition-colors duration-700 ${
-      isMysteryTheme
-        ? 'bg-slate-50 text-slate-900'
-        : 'bg-slate-50 text-slate-900'
-    }`}>
-      {/* Sound toggle button */}
-      <SoundToggle />
+    <div className="min-h-screen relative flex flex-col justify-between overflow-x-hidden bg-[#fafafa] text-slate-900 selection:bg-amber-200 selection:text-slate-900 pt-16">
+      {/* Minimal Top Step Indicator */}
+      <QuestProgress currentStep={currentStepIndex} stepName={currentStepName} />
 
-      {/* Tactile Dot Grid */}
-      <div className="fixed inset-0 pointer-events-none bg-dot-grid opacity-60 z-0" />
+      {/* Clean Background Grid */}
+      <div className="fixed inset-0 pointer-events-none bg-dot-grid opacity-50 z-0" />
 
-      {/* GPU-Optimized Ambient Color Orbs (Fast, Smooth, No CPU Lag) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className={`gpu-ambient-blob absolute -top-20 -left-20 w-[420px] h-[420px] rounded-full blur-[80px] opacity-35 transition-colors duration-700 ${
-          isMysteryTheme ? 'bg-purple-200' : 'bg-rose-200'
-        }`} />
-        <div className={`gpu-ambient-blob absolute top-1/4 -right-20 w-[400px] h-[400px] rounded-full blur-[80px] opacity-35 transition-colors duration-700 ${
-          isMysteryTheme ? 'bg-rose-200' : 'bg-amber-200'
-        }`} />
-        <div className={`gpu-ambient-blob absolute -bottom-20 left-1/3 w-[380px] h-[380px] rounded-full blur-[80px] opacity-30 transition-colors duration-700 ${
-          isMysteryTheme ? 'bg-indigo-100' : 'bg-teal-100'
-        }`} />
-      </div>
-
-      {/* Main Content Area: Smooth 60fps/120fps GPU Composited Transitions */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 max-w-4xl mx-auto w-full">
+      {/* Main Content Area */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 max-w-3xl mx-auto w-full">
         <AnimatePresence mode="wait">
 
-          {/* ----------------- STAGE 0: APOLOGY ----------------- */}
-          {stage === 'APOLOGY' && (
+          {/* ----------------- STAGE 0: WELCOME (Halo Peliii, selamat datang) ----------------- */}
+          {stage === 'WELCOME' && (
             <motion.div
-              key="stage-apology"
-              initial={{ opacity: 0, y: 15, scale: 0.96 }}
+              key="stage-welcome"
+              initial={{ opacity: 0, y: 15, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.96 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="text-center max-w-lg mx-auto py-12 px-6 sm:px-8 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
+              className="text-center max-w-lg mx-auto py-12 px-6 sm:px-10 rounded-[32px] bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.04)] relative"
             >
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90" />
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-100 text-slate-700 font-mono text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-slate-200/80">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Birthday Quest
+              </div>
               
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-6xl sm:text-7xl mb-5 inline-block filter drop-shadow-md"
-              >
-                😔
-              </motion.div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-800 mb-3 font-display">
-                maaf udah suruh kamu buka webside ini😔😔
-              </h2>
-              <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-8 font-medium">
-                Tolong jangan ditutup dulu ya... Ada sesuatu yang harus kamu lihat di sini.
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 mb-3 font-display">
+                Halo Peliii, selamat datang
+              </h1>
+              <p className="text-slate-500 text-base sm:text-lg leading-relaxed mb-8 font-medium">
+                (ikuti arahan nya yahh😊😊)
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.025, y: -1.5 }}
+                  whileHover={{ scale: 1.02, y: -1.5 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setStage('ROULETTE')}
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-[0_10px_24px_rgba(15,23,42,0.16)] liquid-shimmer"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl font-extrabold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-[0_10px_25px_rgba(15,23,42,0.15)] text-sm tracking-wide"
                 >
-                  <span>Buka Sekarang ({apologyCountdown}s)</span>
+                  <span>Mulai Sekarang ({welcomeCountdown}s)</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-amber-300" />
                 </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 1: ROULETTE ----------------- */}
+          {/* ----------------- STAGE 1: ROULETTE (29-11-2011) ----------------- */}
           {stage === 'ROULETTE' && (
             <motion.div
               key="stage-roulette"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               className="w-full"
             >
@@ -300,7 +303,7 @@ export default function App() {
           {stage === 'AGE_QUIZ' && (
             <motion.div
               key="stage-age-quiz"
-              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              initial={{ opacity: 0, y: 15, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 1.02 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -308,11 +311,10 @@ export default function App() {
                 roastShake ? 'animate-shake' : ''
               }`}
             >
-              {/* Question Heading */}
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-700 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
-                  <PartyPopper className="w-4 h-4 text-amber-500 animate-bounce" /> Pertanyaan Spesial
-                </div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-100 text-slate-700 border border-slate-200 mb-3 shadow-xs">
+                  <PartyPopper className="w-3.5 h-3.5 text-amber-500" /> Pertanyaan Spesial
+                </span>
                 <h2 className="text-3xl sm:text-5xl font-black text-slate-900 font-display leading-tight">
                   jadi berapakah umur kamu sekarangg🥳🥳?!?
                 </h2>
@@ -321,104 +323,97 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Slanted Striped Liquid Glass Columns */}
-              <div className="w-full flex flex-col gap-4">
+              {/* Slanted Striped Rectangular Options: Clean Bespoke Cards */}
+              <div className="w-full flex flex-col gap-3.5">
                 {/* Option A (14) - Wrong */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.08, duration: 0.4 }}
                   onClick={() => handleAgeChoice('a')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-indigo-200/90 hover:border-indigo-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(99,102,241,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 text-left group cursor-pointer transition-all shadow-[0_4px_16px_rgba(0,0,0,0.03)]"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
-                  
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-indigo-50/90 border border-indigo-200/80 flex items-center justify-center font-bold font-display text-indigo-600 text-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/90 flex items-center justify-center font-mono font-bold text-slate-700 text-sm group-hover:bg-slate-900 group-hover:text-white transition-colors">
                         a
                       </span>
-                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide font-display">
+                      <span className="text-xl sm:text-2xl font-black text-slate-900 font-display tracking-tight">
                         Kayaknya 14
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-indigo-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                   </div>
                 </motion.button>
 
                 {/* Option B (15) - CORRECT! */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.16, duration: 0.4 }}
                   onClick={() => handleAgeChoice('b')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-purple-200/90 hover:border-purple-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(168,85,247,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 text-left group cursor-pointer transition-all shadow-[0_4px_16px_rgba(0,0,0,0.03)]"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
-                  
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-purple-50/90 border border-purple-200/80 flex items-center justify-center font-bold font-display text-purple-600 text-lg group-hover:bg-purple-600 group-hover:text-white transition-colors shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/90 flex items-center justify-center font-mono font-bold text-slate-700 text-sm group-hover:bg-slate-900 group-hover:text-white transition-colors">
                         b
                       </span>
-                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide font-display">
+                      <span className="text-xl sm:text-2xl font-black text-slate-900 font-display tracking-tight">
                         mungkin 15
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-purple-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                   </div>
                 </motion.button>
 
                 {/* Option C (16) - Wrong */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.24, duration: 0.4 }}
                   onClick={() => handleAgeChoice('c')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-200/90 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(244,63,94,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 text-left group cursor-pointer transition-all shadow-[0_4px_16px_rgba(0,0,0,0.03)]"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
                   <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none group-hover:opacity-100 transition-opacity" />
-                  
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-rose-50/90 border border-rose-200/80 flex items-center justify-center font-bold font-display text-rose-600 text-lg group-hover:bg-rose-600 group-hover:text-white transition-colors shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/90 flex items-center justify-center font-mono font-bold text-slate-700 text-sm group-hover:bg-slate-900 group-hover:text-white transition-colors">
                         c
                       </span>
-                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide font-display">
+                      <span className="text-xl sm:text-2xl font-black text-slate-900 font-display tracking-tight">
                         ohh 16!!!
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                   </div>
                 </motion.button>
               </div>
 
-              {/* Red Mocking Roast: Fast GPU Fade */}
+              {/* Red Mocking Roast */}
               <AnimatePresence>
                 {roastMessage && (
                   <motion.div
-                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                    initial={{ opacity: 0, y: 12, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_12px_28px_rgba(244,63,94,0.12)] relative overflow-hidden"
+                    className="mt-6 w-full p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-center shadow-sm relative overflow-hidden"
                   >
-                    <div className="absolute inset-0 bg-stripes-red opacity-50 pointer-events-none" />
                     <div className="relative z-10 flex flex-col items-center">
-                      <div className="text-3xl mb-1">😝</div>
-                      <p className="text-lg font-black tracking-wide font-display text-rose-950">
+                      <div className="text-2xl mb-1">😝</div>
+                      <p className="text-base sm:text-lg font-black tracking-wide font-display text-rose-950">
                         {roastMessage}
                       </p>
-                      <span className="text-xs text-rose-700 font-semibold mt-1">
+                      <span className="text-xs text-rose-700 font-medium mt-1">
                         Coba tebak lagi yang bener ya!
                       </span>
                     </div>
@@ -428,39 +423,33 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 3: GOKILL + 3s COUNTDOWN ----------------- */}
+          {/* ----------------- STAGE 3: GOKILL + 5s COUNTDOWN ----------------- */}
           {stage === 'GOKILL' && (
             <motion.div
               key="stage-gokill"
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
-              className="text-center py-10 px-6 max-w-lg mx-auto rounded-[32px] liquid-glass-elevated relative overflow-hidden"
+              className="text-center py-12 px-6 sm:px-10 max-w-lg mx-auto rounded-[32px] bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] relative overflow-hidden"
             >
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 mb-6 shadow-xs">
+                <Sparkles className="w-8 h-8" />
+              </div>
 
-              <motion.div
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-block p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 shadow-md mb-6"
-              >
-                <Sparkles className="w-12 h-12 text-emerald-600" />
-              </motion.div>
-
-              <h1 className="text-6xl sm:text-8xl font-black tracking-tight text-emerald-600 font-display drop-shadow-sm">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-slate-900 font-display">
                 GOKILL!!!
               </h1>
 
-              <p className="text-xl sm:text-2xl font-black text-slate-800 mt-3 font-display">
+              <p className="text-xl sm:text-2xl font-black text-emerald-700 mt-3 font-display">
                 Tepat banget! Umur kamu 15 tahun! 🎯🔥
               </p>
 
-              {/* 3 Seconds Countdown */}
+              {/* 5 Seconds Countdown Display */}
               <div className="mt-8 flex flex-col items-center justify-center">
-                <div className="flex items-center gap-2 px-5 py-2.5 rounded-full liquid-glass border border-white text-slate-700 text-sm font-bold shadow-sm">
+                <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-slate-100 border border-slate-200/80 text-slate-700 text-sm font-semibold shadow-xs">
                   <span>Melanjutkan dalam</span>
-                  <span className="w-7 h-7 rounded-full bg-emerald-500 text-white font-black flex items-center justify-center text-sm shadow-md">
+                  <span className="w-6 h-6 rounded-full bg-slate-900 text-white font-mono text-xs font-bold flex items-center justify-center">
                     {gokillCountdown}
                   </span>
                   <span>detik...</span>
@@ -469,58 +458,64 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 4: NOW YOU ARE OLDER THAN ME 🥀 ----------------- */}
-          {stage === 'OLDER_THAN_ME' && (
+          {/* ----------------- STAGE 4: WKWKKW SELAMAT YA SEKARANG LU LEBIH TUA (5 Detik) ----------------- */}
+          {stage === 'OLDER_ROAST' && (
             <motion.div
-              key="stage-older-than-me"
+              key="stage-older-roast"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.45 }}
-              className="text-center max-w-md mx-auto py-12 px-6 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
+              className="text-center max-w-lg mx-auto py-12 px-6 sm:px-8 rounded-[32px] bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.04)]"
             >
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
-
-              <div className="text-5xl sm:text-6xl mb-6 inline-block filter drop-shadow-md">
-                🥀🥀🥀
+              <div className="text-5xl sm:text-6xl mb-6 inline-block">
+                🫵😂🫵😂
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-display leading-relaxed">
-                now you are older than me 🥀🥀🥀
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display leading-snug">
+                WKWKKW selamat ya sekarang lu lebih tua dari gw🫵😂🫵😂
               </h2>
-              <p className="text-slate-400 text-sm mt-4 font-mono tracking-wider">
-                mempersiapkan misi berikutnya...
+              <p className="text-slate-400 text-sm mt-4 font-mono">
+                Membuka misi kotak dalam {olderCountdown} detik...
               </p>
+
+              {/* Progress track for the 5-second duration */}
+              <div className="w-48 h-1.5 bg-slate-100 rounded-full mx-auto mt-6 overflow-hidden">
+                <motion.div
+                  initial={{ width: '100%' }}
+                  animate={{ width: '0%' }}
+                  transition={{ duration: 5, ease: 'linear' }}
+                  className="h-full bg-slate-900 rounded-full"
+                />
+              </div>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 5: SEE BOX QUESTION ----------------- */}
+          {/* ----------------- STAGE 5: SEE BOX QUESTION (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'SEE_BOX_QUESTION' && (
             <motion.div
               key="stage-see-box"
-              initial={{ opacity: 0, y: 15, scale: 0.96 }}
+              initial={{ opacity: 0, y: 15, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               {/* Box Quest Tag */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass border border-purple-200 text-purple-700 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                <Package className="w-4 h-4 text-purple-600" /> Misi Kotak Rahasia
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-100 text-slate-700 border border-slate-200 mb-3 shadow-xs">
+                <Package className="w-3.5 h-3.5 text-slate-500" /> Misi Kotak Rahasia
               </div>
 
               {/* Text: i hope kamu belum buka kotak nya 🥀🥀🥀 */}
-              <p className="text-rose-600 text-base sm:text-lg font-bold mb-4 italic flex items-center justify-center gap-1.5">
+              <p className="text-slate-600 text-base sm:text-lg font-bold mb-4 italic flex items-center justify-center gap-1.5">
                 <span>i hope kamu belum buka kotak nya</span>
                 <span className="text-xl">🥀🥀🥀</span>
               </p>
 
-              {/* Main question Card */}
-              <div className="liquid-glass-elevated rounded-[32px] p-6 sm:p-8 text-center w-full mb-6 relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
+              {/* 3D Modeling Box Illustration - CLOSED KOTAK BOX PERSEGI PANJANG */}
+              <Box3DViewer state="CLOSED" />
 
-                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-md">
-                  <Gift className="w-7 h-7" />
-                </div>
+              {/* Main question Card */}
+              <div className="rounded-[32px] p-6 sm:p-8 text-center w-full mb-6 bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.04)]">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display leading-snug">
                   apakah kamu sudah melihat kotak yang di lapisi itu?
                 </h2>
@@ -529,27 +524,26 @@ export default function App() {
                 </p>
 
                 {/* Choices: a. iya, b. tidak */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8">
                   {/* Option: iya */}
                   <motion.button
-                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileHover={{ scale: 1.015, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleBoxAnswer('iya')}
-                    className={`relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-emerald-300 hover:border-emerald-500 text-left font-display group cursor-pointer transition-all shadow-[0_8px_20px_rgba(16,185,129,0.08)] liquid-shimmer ${
+                    className={`relative overflow-hidden p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left font-display group cursor-pointer transition-all shadow-xs ${
                       hasRemovedTidak ? 'sm:col-span-2' : ''
                     }`}
                   >
-                    <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                     <div className="relative z-10 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="w-9 h-9 rounded-xl bg-emerald-100/90 text-emerald-700 font-bold flex items-center justify-center border border-emerald-200 shadow-sm">
+                        <span className="w-9 h-9 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                           a
                         </span>
-                        <span className="text-xl font-black text-slate-900">
+                        <span className="text-lg font-black text-slate-900">
                           iya, udah liat!
                         </span>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                     </div>
                   </motion.button>
 
@@ -559,23 +553,22 @@ export default function App() {
                       <motion.button
                         key="btn-tidak"
                         initial={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
-                        whileHover={{ scale: 1.02, y: -2 }}
+                        exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.25 } }}
+                        whileHover={{ scale: 1.015, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleBoxAnswer('tidak')}
-                        className="relative overflow-hidden p-5 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left font-display group cursor-pointer transition-all shadow-[0_8px_20px_rgba(244,63,94,0.08)] liquid-shimmer"
+                        className="relative overflow-hidden p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left font-display group cursor-pointer transition-all shadow-xs"
                       >
-                        <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                         <div className="relative z-10 flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="w-9 h-9 rounded-xl bg-rose-100/90 text-rose-700 font-bold flex items-center justify-center border border-rose-200 shadow-sm">
+                            <span className="w-9 h-9 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                               b
                             </span>
-                            <span className="text-xl font-black text-slate-900">
+                            <span className="text-lg font-black text-slate-900">
                               tidak
                             </span>
                           </div>
-                          <ChevronRight className="w-5 h-5 text-rose-600 group-hover:translate-x-1 transition-transform" />
+                          <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                         </div>
                       </motion.button>
                     )}
@@ -590,7 +583,7 @@ export default function App() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="mt-4 p-3.5 rounded-2xl liquid-glass border border-amber-300 text-amber-900 text-sm font-bold shadow-md"
+                      className="mt-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm font-bold"
                     >
                       {boxJokeToast}
                     </motion.div>
@@ -600,48 +593,50 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 6: OPEN FIRST LAYER + 1 MINUTE COUNTDOWN ----------------- */}
+          {/* ----------------- STAGE 6: OPEN FIRST LAYER (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'OPEN_FIRST_LAYER' && (
             <motion.div
               key="stage-open-first-layer"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full liquid-glass border border-amber-200 text-amber-700 text-xs font-bold uppercase tracking-wider mb-3 shadow-sm">
-                  <Flame className="w-4 h-4 text-amber-500" /> Tantangan Waktu 1 Menit
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-100 text-slate-700 border border-slate-200 mb-3 shadow-xs">
+                  <Flame className="w-3.5 h-3.5 text-amber-500" /> Tantangan Waktu 1 Menit
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display leading-snug">
-                  oke sekarang <span className="text-amber-600 underline decoration-amber-400 decoration-wavy">BUKA LAPISAN PERTAMA KOTAK TERSEBUT</span>!
+                  oke sekarang <span className="underline decoration-slate-900 decoration-2 underline-offset-4">BUKA LAPISAN PERTAMA KOTAK TERSEBUT</span>!
                 </h2>
-                <div className="mt-3 p-4 rounded-2xl liquid-glass border border-slate-200/80 text-slate-600 text-sm font-medium shadow-sm">
-                  saya kasih kamu waktu 1 menit, bila tidak terbuka maka kembalikan ke pemberi nya 🫢🫢, <span className="text-amber-700 font-bold">bercanda!!!</span>
+                <div className="mt-3 p-4 rounded-2xl bg-white border border-slate-200/80 text-slate-600 text-sm font-medium shadow-xs">
+                  saya kasih kamu waktu 1 menit, bila tidak terbuka maka kembalikan ke pemberi nya 🫢🫢, <span className="text-slate-900 font-bold">bercanda!!!</span>
                 </div>
               </div>
 
+              {/* 3D Modeling Box Illustration - LID OPEN REVEALING LONG PROTECTIVE PAPER */}
+              <Box3DViewer state="LID_OPEN" />
+
               {/* 1 Minute Countdown Timer Card */}
-              <div className="w-full p-6 sm:p-8 rounded-[32px] liquid-glass-elevated relative overflow-hidden">
-                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90" />
+              <div className="w-full p-6 sm:p-8 rounded-[32px] bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.04)]">
                 <CountdownTimer onSuccess={() => setStage('GUESS_PAPER')} />
               </div>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 7: GUESS WHAT IS BEHIND THE PAPER ----------------- */}
+          {/* ----------------- STAGE 7: GUESS WHAT IS BEHIND THE PAPER (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'GUESS_PAPER' && (
             <motion.div
               key="stage-guess-paper"
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
               <div className="text-center mb-6">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider liquid-glass text-rose-700 border border-rose-200 mb-2 shadow-sm">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-rose-50 text-rose-700 border border-rose-200 mb-2 shadow-xs">
                   <ShieldAlert className="w-3.5 h-3.5" /> Jangan Buka Dulu Kotak Nya!
                 </span>
                 <h2 className="text-2xl sm:text-4xl font-black text-slate-900 font-display leading-tight">
@@ -652,8 +647,11 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Choices */}
-              <div className="w-full flex flex-col gap-3.5">
+              {/* 3D Modeling Box Illustration - LONG PAPER WRAP AROUND SMALL SOAP-SIZED BOX */}
+              <Box3DViewer state="PAPER_PEEK" />
+
+              {/* Choices: sabun, skincare, kunci */}
+              <div className="w-full flex flex-col gap-3">
                 <AnimatePresence>
                   {paperChoices.includes('sabun') && (
                     <motion.button
@@ -661,23 +659,21 @@ export default function App() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
-                      whileHover={{ scale: 1.018, y: -2 }}
+                      whileHover={{ scale: 1.015, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('sabun')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                     >
-                      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
-                      <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <span className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center font-display text-lg border border-slate-200 shadow-sm">
+                          <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                             a
                           </span>
                           <span className="text-xl font-black text-slate-900 font-display">
                             sabun 🧼
                           </span>
                         </div>
-                        <span className="text-xs text-slate-400 font-bold group-hover:text-rose-600 transition-colors">
+                        <span className="text-xs text-slate-400 font-medium group-hover:text-slate-800 transition-colors">
                           Pilih ini?
                         </span>
                       </div>
@@ -690,23 +686,21 @@ export default function App() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
-                      whileHover={{ scale: 1.018, y: -2 }}
+                      whileHover={{ scale: 1.015, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('skincare')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                     >
-                      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
-                      <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <span className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center font-display text-lg border border-slate-200 shadow-sm">
+                          <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                             b
                           </span>
                           <span className="text-xl font-black text-slate-900 font-display">
                             skincare 🧴
                           </span>
                         </div>
-                        <span className="text-xs text-slate-400 font-bold group-hover:text-rose-600 transition-colors">
+                        <span className="text-xs text-slate-400 font-medium group-hover:text-slate-800 transition-colors">
                           Pilih ini?
                         </span>
                       </div>
@@ -719,23 +713,21 @@ export default function App() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.88, transition: { duration: 0.25 } }}
-                      whileHover={{ scale: 1.018, y: -2 }}
+                      whileHover={{ scale: 1.015, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handlePaperGuess('kunci')}
-                      className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-slate-200/90 hover:border-rose-400 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(0,0,0,0.04)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                     >
-                      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-80" />
-                      <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <span className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-bold flex items-center justify-center font-display text-lg border border-slate-200 shadow-sm">
+                          <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                             c
                           </span>
                           <span className="text-xl font-black text-slate-900 font-display">
                             kunci 🔑
                           </span>
                         </div>
-                        <span className="text-xs text-slate-400 font-bold group-hover:text-rose-600 transition-colors">
+                        <span className="text-xs text-slate-400 font-medium group-hover:text-slate-800 transition-colors">
                           Pilih ini?
                         </span>
                       </div>
@@ -748,36 +740,33 @@ export default function App() {
               <AnimatePresence>
                 {paperRoast && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border-2 border-rose-300 text-rose-950 text-center shadow-[0_12px_28px_rgba(244,63,94,0.14)] relative overflow-hidden"
+                    className="mt-6 w-full p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-center shadow-xs"
                   >
-                    <div className="absolute inset-0 bg-stripes-red opacity-50 pointer-events-none" />
-                    <div className="relative z-10">
-                      <p className="text-lg font-black tracking-wide font-display">
-                        {paperRoast}
-                      </p>
-                    </div>
+                    <p className="text-base sm:text-lg font-black tracking-wide font-display">
+                      {paperRoast}
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 8: GIVE UP CHOICE ----------------- */}
+          {/* ----------------- STAGE 8: GIVE UP CHOICE (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'GIVE_UP_CHOICE' && (
             <motion.div
               key="stage-give-up"
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider liquid-glass text-amber-700 border border-amber-200 mb-2 shadow-sm">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-amber-50 text-amber-800 border border-amber-200 mb-2 shadow-xs">
                   <AlertCircle className="w-3.5 h-3.5" /> Tebakan Habis!
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display">
@@ -788,26 +777,27 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="w-full flex flex-col gap-4">
+              {/* 3D Modeling Box Illustration - PAPER PEEK */}
+              <Box3DViewer state="PAPER_PEEK" />
+
+              <div className="w-full flex flex-col gap-3.5">
                 {/* Option: Menyerah */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleGiveUpChoice('surrender')}
-                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-amber-300 hover:border-amber-500 text-left group cursor-pointer transition-all shadow-[0_8px_24px_rgba(245,158,11,0.08)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
-                  <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 font-bold flex items-center justify-center font-display text-lg border border-amber-200 shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                         a
                       </span>
                       <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">
                         menyerah 🏳️
                       </span>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-amber-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                   </div>
                 </motion.button>
 
@@ -816,24 +806,22 @@ export default function App() {
                   {!hasRemovedTrash && (
                     <motion.button
                       key="btn-trash"
-                      exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.3 } }}
-                      whileHover={{ scale: 1.018, y: -2 }}
+                      exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.25 } }}
+                      whileHover={{ scale: 1.015, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleGiveUpChoice('trash')}
-                      className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl liquid-glass border-2 border-rose-300 hover:border-rose-500 text-left group cursor-pointer transition-all shadow-[0_8px_24px_rgba(244,63,94,0.08)] liquid-shimmer"
+                      className="relative overflow-hidden w-full p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                     >
-                      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
-                      <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <span className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 font-bold flex items-center justify-center font-display text-lg border border-rose-200 shadow-sm">
+                          <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                             b
                           </span>
                           <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">
                             buang hadiah nya 🗑️
                           </span>
                         </div>
-                        <ChevronRight className="w-6 h-6 text-rose-500 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className="w-5 h-5 text-slate-400 group-hover:translate-x-1 group-hover:text-slate-800 transition-all" />
                       </div>
                     </motion.button>
                   )}
@@ -848,7 +836,7 @@ export default function App() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-6 w-full p-4 rounded-2xl liquid-glass border border-rose-300 text-rose-900 text-center font-semibold shadow-md"
+                    className="mt-6 w-full p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-center font-semibold shadow-xs"
                   >
                     {trashRoast}
                   </motion.div>
@@ -857,134 +845,124 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 9: UNWRAP FINAL GIFT ----------------- */}
+          {/* ----------------- STAGE 9: UNWRAP FINAL GIFT (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'UNWRAP_FINAL' && (
             <motion.div
               key="stage-unwrap-final"
-              initial={{ opacity: 0, scale: 0.92 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.45 }}
-              className="text-center max-w-lg mx-auto py-10 px-6 sm:px-8 rounded-[32px] liquid-glass-elevated relative overflow-hidden"
+              className="text-center max-w-lg mx-auto py-10 px-6 sm:px-10 rounded-[32px] bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.04)]"
             >
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95" />
-
-              <motion.div
-                animate={{ scale: [1, 1.06, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 to-rose-400 flex items-center justify-center text-white shadow-lg"
-              >
-                <Gift className="w-10 h-10" />
-              </motion.div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-800 font-display leading-tight mb-3">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display leading-tight mb-2">
                 Yaudah deh nyerah kan...
               </h2>
-              <p className="text-xl sm:text-2xl font-black text-amber-600 font-display uppercase tracking-wide mb-8">
+              <p className="text-xl sm:text-2xl font-black text-slate-800 font-display uppercase tracking-wide mb-6">
                 SEKARANG BUKA HADIAH TERSEBUT! 🎁✨
               </p>
 
+              {/* 3D Modeling Box Illustration - FINAL UNWRAPPED SMALL BOX OPENING */}
+              <Box3DViewer state="FINAL_UNWRAPPED" />
+
               <motion.button
-                whileHover={{ scale: 1.025, y: -2 }}
+                whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   sounds.playPoof();
                   setStage('HOW_IS_GIFT');
                 }}
-                className="w-full sm:w-auto min-w-[260px] px-8 py-4 rounded-2xl font-extrabold text-lg bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_12px_24px_rgba(15,23,42,0.18)] cursor-pointer liquid-shimmer"
+                className="w-full sm:w-auto min-w-[260px] px-8 py-4 rounded-2xl font-extrabold text-base bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_12px_24px_rgba(15,23,42,0.15)] cursor-pointer"
               >
                 Sudah Aku Buka! 🎁
               </motion.button>
             </motion.div>
           )}
 
-          {/* ----------------- STAGE 10: BAGUS ENGGA HADIAH NYA??? ----------------- */}
+          {/* ----------------- STAGE 10: BAGUS ENGGA HADIAH NYA??? (WITH 3D BOX MODEL) ----------------- */}
           {stage === 'HOW_IS_GIFT' && (
             <motion.div
               key="stage-how-is-gift"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96 }}
+              exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45 }}
               className="w-full max-w-xl mx-auto flex flex-col items-center"
             >
-              <div className="text-center mb-8">
-                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider liquid-glass text-emerald-700 border border-emerald-200 mb-3 shadow-sm">
-                  <Smile className="w-4 h-4 text-emerald-600" /> Penilaian Terakhir
+              <div className="text-center mb-6">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] font-bold uppercase tracking-[0.2em] bg-slate-100 text-slate-700 border border-slate-200 mb-3 shadow-xs">
+                  <Smile className="w-3.5 h-3.5 text-emerald-600" /> Penilaian Terakhir
                 </span>
                 <h2 className="text-3xl sm:text-5xl font-black text-slate-900 font-display">
                   bagus engga hadiah nya???
                 </h2>
-                <p className="text-slate-500 text-sm mt-3 font-medium">
+                <p className="text-slate-500 text-sm mt-2 font-medium">
                   (Jawab dengan sejujur-jujurnya ya wkwk 😜)
                 </p>
               </div>
 
+              {/* 3D Modeling Box Illustration - FULLY UNWRAPPED RADIATING PRIZE */}
+              <Box3DViewer state="FINAL_UNWRAPPED" />
+
               {/* All 3 choices */}
-              <div className="w-full flex flex-col gap-4">
+              <div className="w-full flex flex-col gap-3.5">
                 {/* a. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-emerald-200 hover:border-emerald-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(16,185,129,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
-                  <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center font-display text-lg border border-emerald-200 shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                         a
                       </span>
                       <span className="text-2xl font-black text-slate-900 font-display">
                         bagus 👍
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-emerald-600 group-hover:scale-115 transition-transform" />
+                    <Heart className="w-5 h-5 text-rose-500 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* b. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-teal-200 hover:border-teal-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(20,184,166,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
-                  <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 font-bold flex items-center justify-center font-display text-lg border border-teal-200 shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                         b
                       </span>
                       <span className="text-2xl font-black text-slate-900 font-display">
                         bagus banget! 😍
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-teal-600 group-hover:scale-115 transition-transform" />
+                    <Heart className="w-5 h-5 text-rose-500 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
 
                 {/* c. bagus */}
                 <motion.button
-                  whileHover={{ scale: 1.018, y: -2 }}
+                  whileHover={{ scale: 1.015, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleHowIsGift}
-                  className="relative overflow-hidden w-full p-5 rounded-2xl liquid-glass border-2 border-cyan-200 hover:border-cyan-500 text-left group cursor-pointer transition-all shadow-[0_8px_20px_rgba(6,182,212,0.06)] liquid-shimmer"
+                  className="relative overflow-hidden w-full p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-800 text-left group cursor-pointer transition-all shadow-xs"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-85" />
-                  <div className="absolute inset-0 bg-stripes-slanted opacity-70 pointer-events-none" />
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <span className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 font-bold flex items-center justify-center font-display text-lg border border-cyan-200 shadow-sm">
+                      <span className="w-10 h-10 rounded-xl bg-slate-100 font-mono text-xs font-bold text-slate-700 flex items-center justify-center border border-slate-200">
                         c
                       </span>
                       <span className="text-2xl font-black text-slate-900 font-display">
                         bagus parahh! 🔥
                       </span>
                     </div>
-                    <Heart className="w-6 h-6 text-cyan-600 group-hover:scale-115 transition-transform" />
+                    <Heart className="w-5 h-5 text-rose-500 group-hover:scale-115 transition-transform" />
                   </div>
                 </motion.button>
               </div>
@@ -995,33 +973,26 @@ export default function App() {
           {stage === 'FINALE' && (
             <motion.div
               key="stage-finale"
-              initial={{ opacity: 0, scale: 0.92 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.45 }}
-              className="text-center max-w-2xl mx-auto py-10 px-6 sm:px-10 rounded-[36px] liquid-glass-elevated relative overflow-hidden"
+              className="text-center max-w-2xl mx-auto py-10 px-6 sm:px-10 rounded-[36px] bg-white border border-slate-200 shadow-[0_25px_60px_rgba(0,0,0,0.06)] relative overflow-hidden"
             >
-              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-amber-400 via-rose-400 to-purple-400" />
-              
               <div className="relative z-10">
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-                  className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-tr from-amber-400 via-rose-400 to-purple-500 flex items-center justify-center text-white shadow-lg"
-                >
-                  <PartyPopper className="w-10 h-10 text-white" />
-                </motion.div>
+                {/* 3D Modeling Box Illustration - CELEBRATING */}
+                <Box3DViewer state="CELEBRATING" className="max-w-md mx-auto" />
 
                 {/* Special 15th Birthday Badge */}
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full liquid-glass text-amber-800 border border-amber-200 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
-                  <Sparkles className="w-4 h-4 text-amber-500 animate-spin" /> Special 15th Birthday
+                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200 font-mono text-[10px] font-bold uppercase tracking-[0.2em] mb-4 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Special 15th Birthday
                 </span>
 
                 <h1 className="text-3xl sm:text-5xl font-black text-slate-900 font-display leading-tight mb-4">
-                  HAPPY BIRTHDAY! 🎉🎂
+                  HAPPY BIRTHDAY, PELIII! 🎉🎂
                 </h1>
 
                 {/* Closing text */}
-                <div className="my-6 p-6 rounded-2xl liquid-glass border border-white text-slate-700 text-base sm:text-lg leading-relaxed shadow-sm">
+                <div className="my-6 p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-slate-700 text-base sm:text-lg leading-relaxed shadow-xs">
                   <p className="font-extrabold text-slate-900 text-lg sm:text-xl font-display mb-2">
                     "itu saja pertunjukan dari webside ini, maaf merepotkan"
                   </p>
@@ -1031,25 +1002,25 @@ export default function App() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-8">
                   <motion.button
-                    whileHover={{ scale: 1.025, y: -2 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       launchGrandCelebration();
                       sounds.playCelebration();
                     }}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_10px_24px_rgba(15,23,42,0.16)] flex items-center justify-center gap-2 cursor-pointer liquid-shimmer"
+                    className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-[0_10px_24px_rgba(15,23,42,0.16)] flex items-center justify-center gap-2 cursor-pointer text-sm"
                   >
-                    <Sparkles className="w-5 h-5 text-amber-300" />
+                    <Sparkles className="w-4 h-4 text-amber-300" />
                     <span>Lagi Confetti! 🎊</span>
                   </motion.button>
 
                   <motion.button
-                    whileHover={{ scale: 1.025, y: -2 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleRestart}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-bold liquid-glass hover:bg-white text-slate-700 border border-slate-200 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto px-7 py-3.5 rounded-2xl font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
                   >
                     <RotateCcw className="w-4 h-4 text-slate-500" />
                     <span>Ulangi Dari Awal</span>
@@ -1063,8 +1034,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 text-center text-xs text-slate-400 border-t border-slate-200/60 font-medium">
-        <span>Birthday Mystery Box Quest • 29-11-2011</span>
+      <footer className="relative z-10 py-5 text-center text-xs text-slate-400 font-mono border-t border-slate-100">
+        <span>Birthday Mystery Box Quest • 29-11-2011 • Peliii</span>
       </footer>
     </div>
   );
